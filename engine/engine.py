@@ -79,7 +79,7 @@ def check_for_scan_jobs():
         # Return response as JSON if request is successful.
         if response_code == 200:
             json_data = json.loads(response_data)
-            return json_data
+            return json_data['results']
 
         else:
             ROOT_LOGGER.error(f"Could not access {console_address}:{console_port}. HTTP status code: {response_code}")
