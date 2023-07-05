@@ -31,7 +31,7 @@ from django_scantron.models import (
     ScheduledScan,
     Site,
 )
-import utility
+import utility2
 
 
 @api_view(["GET"])
@@ -184,7 +184,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
 
                 if new_scan_status == "cancelled":
                     # Move scan files to the "cancelled" directory for historical purposes.
-                    utility.move_wildcard_files(
+                    utility2.move_wildcard_files(
                         f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, cancelled_files_dir
                     )
 
@@ -196,7 +196,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
 
                 if new_scan_status == "completed":
                     # Move files from "pending" directory to "complete" directory.
-                    utility.move_wildcard_files(
+                    utility2.move_wildcard_files(
                         f"{scheduled_scan_dict['result_file_base_name']}*", pending_files_dir, completed_files_dir
                     )
 
@@ -207,7 +207,7 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                     )
 
                 # Update the scheduled_scan_dict with the most recent scan_status state from the PATCH request.  When
-                # originally querying above, the old state would passed to utility.py since it hasn't officially been
+                # originally querying above, the old state would passed to utility2.py since it hasn't officially been
                 # updated by Django's .update() yet.
                 scheduled_scan_dict["scan_status"] = new_scan_status
 
@@ -217,8 +217,8 @@ class ScheduledScanViewSet(ListRetrieveUpdateViewSet, DefaultsMixin):
                 # Create a redis queue object.
                 q = rq.Queue(connection=redis_conn)
 
-                # Queue up the scheduled_scan_dict to be processed by utility.py.
-                job = q.enqueue(utility.process_scan_status_change, scheduled_scan_dict)  # noqa
+                # Queue up the scheduled_scan_dict to be processed by utility2.py.
+                job = q.enqueue(utility2.process_scan_status_change, scheduled_scan_dict)  # noqa
 
             else:
                 raise Http404

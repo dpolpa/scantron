@@ -5,7 +5,7 @@
 
 - name: Add postgresql APT repository.
   apt_repository:
-    repo: deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main
     filename: pgdg.list
     state: present
     update_cache: yes
@@ -101,7 +101,7 @@
   tags: update_code
 
 - name: Create "{{ venv_dir }}" virtualenv directory.
-  command: "virtualenv -p /usr/bin/python3.6 {{ venv_dir }}"
+  command: "virtualenv {{ venv_dir }}"
   ignore_errors: yes  # For reruns only.
 
 - name: Install pip requirements.
@@ -114,7 +114,7 @@
 # https://github.com/django-recurrence/django-recurrence/issues/160
 - name: Modify recurrence.js until django-recurrence maintainers address issue 160.
   lineinfile:
-    path: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence.js"
+    path: "{{ venv_dir }}/lib/python{{ ansible_python_version.split('.')[0]}}.{{ ansible_python_version.split('.')[1]}}/site-packages/recurrence/static/recurrence/js/recurrence.js"
     regexp: '        var language_code = recurrence.language_code;'
     line: '        var language_code = "en";'
     backup: yes
@@ -123,10 +123,11 @@
 - name: Update recurrence-widget.js to support hourly frequency.
   copy:
     src: files/site-packages/recurrence/static/recurrence/js/recurrence-widget.js
-    dest: "{{ venv_dir }}/lib/python3.6/site-packages/recurrence/static/recurrence/js/recurrence-widget.js"
+    dest: "{{ venv_dir }}/lib/python{{ ansible_python_version.split('.')[0]}}.{{ ansible_python_version.split('.')[1]}}/site-packages/recurrence/static/recurrence/js/recurrence-widget.js"
     owner: "{{ non_root_user }}"
     group: "{{ non_root_user }}"
     mode: 0644
+
 
 - name: Change ownership of "{{ scantron_dir }}" folder.
   file:
@@ -280,6 +281,13 @@
   args:
     chdir: "{{ scantron_dir }}"
   tags: update_code
+
+- name: Add www-data to scantron group
+  user:
+    name: www-data
+    groups: scantron
+    append: yes
+
 
 # uWSGI
 #######

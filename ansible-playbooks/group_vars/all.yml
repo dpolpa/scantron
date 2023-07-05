@@ -1,6 +1,6 @@
 ---
 # Specify Python version to use on managed machines.
-ansible_python_interpreter: "/usr/bin/python3"
+ansible_python_interpreter: "python3"
 
 # Variables listed here are applicable to all roles.
 non_root_user: scantron
